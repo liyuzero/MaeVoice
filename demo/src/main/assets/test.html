@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<script type="text/javascript">
+
+        // 调用原生开始录
+        function start () {
+			var json = '{"audioRate":"16000","channelConfig":"16", "audioFormat" : "1"}'
+			window.Android.startRecording(json);     // 调用webview开放接口开始录音
+        }
+
+        // 调用原生结束
+        function end() {
+			window.Android.finishRecording();
+        }
+
+        // android 原生回调 js
+		function parseRecordComplete(result) {  // result 为 startRecording() 时 指定的服务器url回传的信息
+			if(!/\s+/.test(result)) {
+			    alert("文件已生成: " + result)
+		    }
+		}
+</script>
+
+<body>
+<button type="button" onclick="start()">开始录音</button>
+<button type="button" onclick="end()">结束录音</button>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">mae-bundles-voice</string>
+    <string name="record_need_permission">录音需要相关权限</string>
+</resources>
