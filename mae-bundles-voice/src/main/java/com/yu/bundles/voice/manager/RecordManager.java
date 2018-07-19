@@ -51,6 +51,15 @@ class RecordManager implements RecordAPI {
                 }
                 recordAPI = new WavRecordUtils(voiceType, (AudioRecordParam) voiceParam);
                 break;
+            case OTHER_EXTEND:
+                if (!(voiceParam instanceof AudioRecordParam)) {
+                    throw new RuntimeException("The voiceParam must be AudioRecordParam");
+                }
+                if(((AudioRecordParam) voiceParam).pcmFileConverter == null){
+                    throw new RuntimeException("You must set pcm file converter!!");
+                }
+                recordAPI = ((AudioRecordParam)voiceParam).pcmFileConverter;
+                break;
         }
     }
 

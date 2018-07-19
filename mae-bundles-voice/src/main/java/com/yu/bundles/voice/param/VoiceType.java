@@ -5,5 +5,5 @@ package com.yu.bundles.voice.param;
  */
 
 public enum VoiceType {
-    PCM_16BIT, PCM_8BIT, WAV, AMR
+    PCM_16BIT, PCM_8BIT, WAV, AMR, OTHER_EXTEND
 }

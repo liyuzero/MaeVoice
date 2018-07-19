@@ -23,7 +23,7 @@ allprojects {
     }
 }
 
-apply from: "me_config.gradle"
+apply from: "config.gradle"
 
 task clean(type: Delete) {
     delete rootProject.buildDir

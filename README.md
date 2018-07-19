@@ -1,15 +1,18 @@
 ==================
+相册组件
+====
 语音录制、播放模块
 支持基于Media和Audio的语音录制和播放。
+支持基于PCM的格式扩展操作
 
 ## 功能类别
 - 语音录制
     1. 支持Android直接录制格式：PCM16，PCM8，AMR等
-    2. 支持基于原始音频格式的包装扩展格式，目前支持SPX和WAV
+    2. 支持基于原始音频格式的包装扩展格式，目前支持WAV
     3. Audio录制支持采样频率、通道等参数的自定义
     4. Media录制支持自定义编码格式
 - 语音播放
-    1. 支持PCM，AMR，SPX，WAV等格式的播放
+    1. 支持PCM，AMR，WAV等格式的播放
 
 ## 使用方法
 ### 新增依赖
@@ -28,7 +31,7 @@ allprojects {
 2. 使用module依赖，新增依赖：
 
 ```
-compile 'com.github.liyuzero:MaeBundlesVoice:1.0.0'
+compile 'com.github.liyuzero:mae-bundles-voice:1.0.0'
 ```
 
 ### 具体调用（详情见demo）
@@ -101,7 +104,60 @@ compile 'com.github.liyuzero:MaeBundlesVoice:1.0.0'
     playerAPI.release();
 ```
 
-3. 整体释放资源方法[自动执行]（整体释放播放和录制资源，目前跟随Activity生命周期的onDestroy()自动销毁，也可自己手动调用）
+3. 自定义PCM文件扩展，即提供基于PCM原始文件的文件转换能力
+```
+        AudioRecordParam param = DefaultParam.getDefaultAudioRecordParam());
+        param.setPcmFileConverter(new WavRecordUtils()); //改成你自己的基于BaseAudioRecordExtendUtils的实现类
+        
+        /*
+         * 文件转换类自行实现文件转换方法,具体实现参考WavRecordUtils
+            public class TestFileConvater extends BaseAudioRecordExtendUtils {
+                
+                public TestFileConvater(VoiceType voiceType, AudioRecordParam audioParam) {
+                    super(voiceType, audioParam);
+                }
+            
+                @Override
+                //设置临时文件的名字，对应于originFilePath
+                protected String getTempFileName() {
+                    return null;
+                }
+            
+                //将生成的PCM文件originFilePath：自行转换为outputFilePath所对应的文件，outputFilePath对应于外界指定的文件录音地址
+                @Override
+                protected String transform(String originFilePath, String outputFilePath) {
+                    return null;
+                }
+            }
+         *
+         */
+        
+        recordAPI = VoiceManager.with(RecordNativeTestActivity.this).getRecordAPI(VoiceType.WAV, param);
+
+```
+
+4、支持不输出文件
+    而只进行录音的PCM原始字节数组的实时传出（字节数组内部进行了一次复制传出，避免了多线程下数据错乱的问题）
+    即：只调用 onRecordBytes(byte[] audioData, int len, int audioSeq)，而不进行文件写入
+    该功能能有效支持以下应用场景：
+    例如我们需要做一个语音转文字功能，或者聊天时将语音发给对方，这时候如果采用录制完后，再将所有语音数据传输给后台，
+    将会出现较大的响应延迟，客户端需要经过一个较长的时间才能取得结果。这时候如果不录制文件，而直接通过onRecordBytes
+    接收每一帧音频数据直接发送到服务端，实现实时传输，这时候效果会好很多
+```
+    AudioRecordParam param = DefaultParam.getDefaultAudioRecordParam());
+    //byte[] audioData【每次通过麦克风采集的录音数据】的数组大小可以通过以下配置自行控制，因为一些语音数据压缩库可能对源字节数组的大小有限制，
+    //例如opus，会有：
+    //频率 * 位数 * 通道数 / 位 = B/s /(200ms / 1000ms) = B/200ms
+    //bufferLen = getSampleRate() * 16 * 1 / 8 / 5;
+    param.bufferLen = 14000;
+    //当配置以下参数时，库内部将不再执行文件写入操作，而只会调用
+    //onRecordBytes(byte[] audioData, int len, int audioSeq) 
+    //和 onFinishRecord(long duration, String filePath)，其中filePath无意义
+    param.setIsOutputFile(false); //不输出录音文件
+    
+```
+
+5. 释放麦克风等资源的方法
 
 ```
    VoiceManager.getInstance().onDestroy();

@@ -3,6 +3,7 @@ package com.yu.bundles.voice.param.record;
 import android.media.AudioFormat;
 
 import com.yu.bundles.voice.param.VoiceType;
+import com.yu.bundles.voice.record.audio_extend.BaseAudioRecordExtendUtils;
 
 /**
  * Created by liyu on 2017/11/2.
@@ -13,10 +14,16 @@ public class AudioRecordParam extends VoiceRecordParam {
     public AudioInChannel audioInChannel;
     public boolean isSetOutputFile = true;
     public int bufferLen = 0;
+    public BaseAudioRecordExtendUtils pcmFileConverter;
 
     public AudioRecordParam(int sampleRateInHz, AudioInChannel audioInChannel) {
         this.sampleRateInHz = sampleRateInHz;
         this.audioInChannel = audioInChannel;
+    }
+
+    public AudioRecordParam setPcmFileConverter(BaseAudioRecordExtendUtils pcmFileConverter) {
+        this.pcmFileConverter = pcmFileConverter;
+        return this;
     }
 
     /**

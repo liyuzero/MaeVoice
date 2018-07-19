@@ -26,7 +26,7 @@ public abstract class BaseAudioRecordExtendUtils implements RecordAPI, Transform
     private File tempFile;
     private String outputFilePath;
 
-    BaseAudioRecordExtendUtils(VoiceType voiceType, AudioRecordParam audioParam) {
+    public BaseAudioRecordExtendUtils(VoiceType voiceType, AudioRecordParam audioParam) {
         this.audioParam = audioParam;
         audioRecordUtils = new AudioRecordUtils(voiceType, audioParam, this);
     }
