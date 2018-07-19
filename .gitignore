@@ -29,7 +29,6 @@ proguard/
 *.log
 *.iml
 app.iml
-gradle/*
 welfareplugin/*
 ;buildsrc/
 welfareplugin/
