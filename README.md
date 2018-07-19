@@ -136,22 +136,34 @@ compile 'com.github.liyuzero:mae-bundles-voice:1.0.0'
 ```
 
 4、支持不输出文件
-    而只进行录音的PCM原始字节数组的实时传出（字节数组内部进行了一次复制传出，避免了多线程下数据错乱的问题）
-    即：只调用 onRecordBytes(byte[] audioData, int len, int audioSeq)，而不进行文件写入
-    该功能能有效支持以下应用场景：
-    例如我们需要做一个语音转文字功能，或者聊天时将语音发给对方，这时候如果采用录制完后，再将所有语音数据传输给后台，
-    将会出现较大的响应延迟，客户端需要经过一个较长的时间才能取得结果。这时候如果不录制文件，而直接通过onRecordBytes
-    接收每一帧音频数据直接发送到服务端，实现实时传输，这时候效果会好很多
 ```
+    /*
+      而只进行录音的PCM原始字节数组的实时传出（字节数组内部进行了一次复制传出，避免了多线程下数据错乱的问题）
+      即：只调用 onRecordBytes(byte[] audioData, int len, int audioSeq)，而不进行文件写入
+    
+      该功能能有效支持以下应用场景：
+    
+      例如我们需要做一个语音转文字功能，或者聊天时将语音发给对方，这时候如果采用录制完后，再将所有语音数据传输给后台，
+      将会出现较大的响应延迟，客户端需要经过一个较长的时间才能取得结果。这时候如果不录制文件，而直接通过onRecordBytes
+      接收每一帧音频数据直接发送到服务端，实现实时传输，这时候效果会好很多
+    */
+    
     AudioRecordParam param = DefaultParam.getDefaultAudioRecordParam());
-    //byte[] audioData【每次通过麦克风采集的录音数据】的数组大小可以通过以下配置自行控制，因为一些语音数据压缩库可能对源字节数组的大小有限制，
-    //例如opus，会有：
-    //频率 * 位数 * 通道数 / 位 = B/s /(200ms / 1000ms) = B/200ms
-    //bufferLen = getSampleRate() * 16 * 1 / 8 / 5;
+    
+    /*
+      byte[] audioData【每次通过麦克风采集的录音数据】的数组大小可以通过以下配置自行控制，因为一些语音数据压缩库可能对源字节数组的大小有限制，
+      例如opus，会有：
+      频率 * 位数 * 通道数 / 位 = B/s /(200ms / 1000ms) = B/200ms
+    */
+    
+    bufferLen = getSampleRate() * 16 * 1 / 8 / 5;
     param.bufferLen = 14000;
-    //当配置以下参数时，库内部将不再执行文件写入操作，而只会调用
-    //onRecordBytes(byte[] audioData, int len, int audioSeq) 
-    //和 onFinishRecord(long duration, String filePath)，其中filePath无意义
+    
+    /*
+      当配置以下参数时，库内部将不再执行文件写入操作，而只会调用
+      onRecordBytes(byte[] audioData, int len, int audioSeq) 
+      和 onFinishRecord(long duration, String filePath)，其中filePath无意义
+    */
     param.setIsOutputFile(false); //不输出录音文件
     
 ```
