@@ -31,7 +31,7 @@ allprojects {
 2. 使用module依赖，新增依赖：
 
 ```
-compile 'com.github.liyuzero:mae-bundles-voice:1.0.0'
+compile 'com.github.liyuzero:MaeBundlesVoice:1.0.0'
 ```
 
 ### 具体调用（详情见demo）
