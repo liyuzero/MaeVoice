@@ -51,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(final View v) {
-        MAEMonitorFragment.getInstance(MainActivity.this).requestPermission(new String[]{Manifest.permission.GET_ACCOUNTS},
+        MAEMonitorFragment.getInstance(MainActivity.this).requestPermission(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO},
                 new MAEPermissionCallback() {
                     @Override
                     public void onPermissionApplySuccess() {

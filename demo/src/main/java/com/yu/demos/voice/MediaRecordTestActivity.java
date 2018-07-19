@@ -15,7 +15,6 @@ import com.yu.bundles.voice.record.RecordListener;
 import java.io.File;
 
 public class MediaRecordTestActivity extends AppCompatActivity {
-
 	private Button startBtn;
 	private String filePath;
 	private boolean isPlaying;
