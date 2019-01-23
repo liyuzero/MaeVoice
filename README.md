@@ -11,6 +11,8 @@
     - 支持基于原始音频格式的包装扩展格式，目前支持WAV
     - Audio录制支持采样频率、通道等参数的自定义
     - Media录制支持自定义编码格式
+    - H5接入语音功能示例
+      https://github.com/liyuzero/MaeVoice/blob/master/h5.md
 - 语音播放
     - 支持PCM，AMR，WAV等格式的播放
 
