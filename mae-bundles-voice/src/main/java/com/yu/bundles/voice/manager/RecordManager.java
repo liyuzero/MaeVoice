@@ -21,7 +21,7 @@ import com.yu.bundles.voice.record.audio_extend.WavRecordUtils;
  */
 
 @Keep
-class RecordManager implements RecordAPI {
+public class RecordManager implements RecordAPI {
     private RecordAPI recordAPI;
     private RecordingDurationRunnable mRunnable = new RecordingDurationRunnable();
     private long MAX_RECORD_TIME;

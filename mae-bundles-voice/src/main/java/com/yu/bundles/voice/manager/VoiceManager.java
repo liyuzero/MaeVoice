@@ -40,6 +40,19 @@ public class VoiceManager {
         return voiceManager;
     }
 
+    //不需要生成临时文件
+    public static VoiceManager with(){
+        cacheDir = "";
+        if(voiceManager == null){
+            synchronized (VoiceManager.class){
+                if(voiceManager == null){
+                    voiceManager = new VoiceManager();
+                }
+            }
+        }
+        return voiceManager;
+    }
+
     private VoiceManager() {
     }
 
