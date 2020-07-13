@@ -9,12 +9,21 @@ import com.yu.bundles.voice.param.VoiceParam;
 public abstract class VoiceRecordParam extends VoiceParam{
     private int maxRecordTime = 59 * 1000;
     private long volumeInterval = 50; // 间隔取样时间
+    private boolean mIsCallbackInMainThread = true;
 
     protected VoiceRecordParam() {}
 
     public VoiceRecordParam setMaxRecordTime(int maxRecordTime) {
         this.maxRecordTime = maxRecordTime;
         return this;
+    }
+
+    public boolean isCallbackInMainThread() {
+        return mIsCallbackInMainThread;
+    }
+
+    public void setCallbackInMainThread(boolean callbackInMainThread) {
+        mIsCallbackInMainThread = callbackInMainThread;
     }
 
     public int getMaxRecordTime() {

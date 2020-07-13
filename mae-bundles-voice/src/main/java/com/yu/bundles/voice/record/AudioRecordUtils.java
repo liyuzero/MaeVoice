@@ -33,7 +33,7 @@ public final class AudioRecordUtils implements RecordAPI{
 	private long startTime = 0;
 	private TransformFormatOperator transformFormatOperator; //格式转换器\
 	private VoiceType voiceType;
-	private AudioRecordParam audioParam;
+	private AudioRecordParam mRecordParam;
 	private Queue<Integer> eventList = new LinkedList<>();
 	private int BUFFER_LEN = 0;
 
@@ -44,24 +44,24 @@ public final class AudioRecordUtils implements RecordAPI{
 
 	private int audioSeq = 0; //录音的字节数组的序列号
 
-	public AudioRecordUtils(VoiceType voiceType, AudioRecordParam audioParam){
-		this(voiceType, audioParam, null);
+	public AudioRecordUtils(VoiceType voiceType, AudioRecordParam mRecordParam){
+		this(voiceType, mRecordParam, null);
 	}
 
-	public AudioRecordUtils(VoiceType voiceType, AudioRecordParam audioParam, TransformFormatOperator transformFormatOperator){
+	public AudioRecordUtils(VoiceType voiceType, AudioRecordParam mRecordParam, TransformFormatOperator transformFormatOperator){
 		this.transformFormatOperator = transformFormatOperator;
 		this.voiceType = voiceType;
-		this.audioParam = audioParam;
+		this.mRecordParam = mRecordParam;
 	}
 
 	private void initRecord(){
 		// 获得缓冲区字节大小
-		bufferSizeInBytes = AudioRecord.getMinBufferSize(audioParam.sampleRateInHz,
-				audioParam.getAudioInChannel(), audioParam.getAudioFormat(voiceType));
-		BUFFER_LEN = audioParam.bufferLen > 0? audioParam.bufferLen: bufferSizeInBytes;
+		bufferSizeInBytes = AudioRecord.getMinBufferSize(mRecordParam.sampleRateInHz,
+				mRecordParam.getAudioInChannel(), mRecordParam.getAudioFormat(voiceType));
+		BUFFER_LEN = mRecordParam.bufferLen > 0? mRecordParam.bufferLen: bufferSizeInBytes;
 		// 创建AudioRecord对象
-		audioRecord = new AudioRecord(RecordUtils.DEFAULT_AUDIO_INPUT, audioParam.sampleRateInHz,
-				audioParam.getAudioInChannel(), audioParam.getAudioFormat(voiceType), bufferSizeInBytes);
+		audioRecord = new AudioRecord(RecordUtils.DEFAULT_AUDIO_INPUT, mRecordParam.sampleRateInHz,
+				mRecordParam.getAudioInChannel(), mRecordParam.getAudioFormat(voiceType), bufferSizeInBytes);
 	}
 
 	/**
@@ -94,8 +94,8 @@ public final class AudioRecordUtils implements RecordAPI{
 			listener.onError(new RuntimeException("Recorder init fail..."));
 			return;
 		}
-		if (RecordUtils.isSdcardExit() && audioParam.isSetOutputFile || !audioParam.isSetOutputFile) {
-			this.outputFilePath = audioParam.isSetOutputFile? outputFilePath: this.outputFilePath;
+		if (RecordUtils.isSdcardExit() && mRecordParam.isSetOutputFile || !mRecordParam.isSetOutputFile) {
+			this.outputFilePath = mRecordParam.isSetOutputFile? outputFilePath: this.outputFilePath;
 			this.recordListener = listener;
 			audioRecord.startRecording();
 			int sum = 0;
@@ -169,7 +169,7 @@ public final class AudioRecordUtils implements RecordAPI{
 				e.printStackTrace();
 				eventList.offer(STOP);
 				if(recordListener != null){
-					handler.post(new Runnable() {
+					postRun(mRecordParam.isCallbackInMainThread(), new Runnable() {
 						@Override
 						public void run() {
 							recordListener.onError(e);
@@ -180,7 +180,7 @@ public final class AudioRecordUtils implements RecordAPI{
 
 			Integer stopState = eventList.poll();
             if (recordListener != null && transformFormatOperator == null && stopState == STOP) {
-            	handler.post(new Runnable() {
+				postRun(mRecordParam.isCallbackInMainThread(), new Runnable() {
 					@Override
 					public void run() {
 						recordListener.onFinishRecord(System.currentTimeMillis() - startTime, outputFilePath);
@@ -190,7 +190,7 @@ public final class AudioRecordUtils implements RecordAPI{
 			//如果含有转换器，则对原始音频数据文件进行格式转换，目前支持spx和wav
 			if(transformFormatOperator != null && recordListener != null && stopState == STOP){
 				final String targetPath = transformFormatOperator.transform(outputFilePath);
-				handler.post(new Runnable() {
+				postRun(mRecordParam.isCallbackInMainThread(), new Runnable() {
 					@Override
 					public void run() {
 						recordListener.onFinishRecord(System.currentTimeMillis() - startTime, targetPath);
@@ -231,7 +231,7 @@ public final class AudioRecordUtils implements RecordAPI{
 						fos.write(audioData);
 					} catch (final IOException e) {
 						if (recordListener != null) {
-							handler.post(new Runnable() {
+							postRun(mRecordParam.isCallbackInMainThread(), new Runnable() {
 								@Override
 								public void run() {
 									recordListener.onError(e);
@@ -285,7 +285,7 @@ public final class AudioRecordUtils implements RecordAPI{
 					file.delete();
 				}
 				if (recordListener != null) {
-					handler.post(new Runnable() {
+					postRun(mRecordParam.isCallbackInMainThread(), new Runnable() {
 						@Override
 						public void run() {
 							recordListener.onCancel();
@@ -305,7 +305,7 @@ public final class AudioRecordUtils implements RecordAPI{
 
 	private FileOutputStream getFileOutputStream(String outputFilePath) throws Exception{
 		FileOutputStream fos = null;
-		if(!audioParam.isSetOutputFile){
+		if(!mRecordParam.isSetOutputFile){
 			return fos;
 		}
 		File file = new File(outputFilePath);
@@ -320,7 +320,7 @@ public final class AudioRecordUtils implements RecordAPI{
 	private long lastComputePowerTime;
 
 	private long computePower(byte[] buffer, int length) {
-		if(System.currentTimeMillis() - lastComputePowerTime > audioParam.getVolumeInterval()){
+		if(System.currentTimeMillis() - lastComputePowerTime > mRecordParam.getVolumeInterval()){
 			final short[] data = new short[length / 2];
 			for (int i = 0; i < data.length; i++) {
 				data[i] = (short) ((buffer[2 * i + 1] << 8) | (buffer[2 * i] & 0xff));
@@ -359,6 +359,14 @@ public final class AudioRecordUtils implements RecordAPI{
 
 	public int getBufferSizeInBytes() {
 		return bufferSizeInBytes;
+	}
+
+	private void postRun(boolean isMainThread, Runnable runnable) {
+		if(isMainThread) {
+			handler.post(runnable);
+		} else {
+			runnable.run();
+		}
 	}
 }
 
